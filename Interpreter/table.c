@@ -20,7 +20,7 @@ void freeTable(Table* table) {
 }
 
 static Entry* findEntry(Entry* entries, int capacity, ObjString* key) {
-	uint32_t index = key->hash % capacity;
+	uint32_t index = key->hash & (capacity - 1); //table will always be grown in powers of 2, this operation is the same as (% capacity)
 	Entry* tombstone = NULL;
 
 	for (;;) { //linear probing
@@ -36,7 +36,7 @@ static Entry* findEntry(Entry* entries, int capacity, ObjString* key) {
 		else if (entry->key == key) { //found the key we were looking for
 			return entry;
 		}
-		index = (index + 1) % capacity; //we loop back around when we read the end of the array 
+		index = (index + 1) & (capacity - 1); //we loop back around when we read the end of the array 
 	}
 }
 
@@ -109,7 +109,7 @@ void tableAddAll(Table* from, Table* to) {
 
 ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t hash) { //we pass in raw character array of key instead of ObjString
 	if (table->count == 0) return NULL;
-	uint32_t index = hash % table->capacity;
+	uint32_t index = hash & (table->capacity - 1);
 	for (;;) {
 		Entry* entry = &table->entries[index];
 		if (entry->key == NULL) { //found empty, non-tombstone entry
@@ -117,7 +117,7 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
 		} else if (entry->key->length == length && entry->key->hash == hash && memcmp(entry->key->chars, chars, length) == 0) { //found the string
 			return entry->key;
 		}
-		index = (index + 1) % table->capacity;
+		index = (index + 1) & (table->capacity - 1);
 	}
 }
 
