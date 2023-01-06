@@ -1,16 +1,6 @@
-class Doughnut {
-	cook() {
-		print "Dunk in the fryer.";
-		this.finish("sprinkles");
-	}
-
-	finish(ingredient) {
-		print "Finish with " + ingredient;
-	}
+fun badSquareRoot(b) {
+	return sqrt(b);
 }
 
-class Cruller < Doughnut {
-	finish(ingredient) {
-		super.finish("icing");
-	}
-}
+var badSq = badSquareRoot(2);
+print badSq;

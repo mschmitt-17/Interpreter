@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <time.h>
+#include <math.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -13,10 +14,6 @@
 
 
 VM vm;
-
-static Value clockNative(int argCount, Value* args) {
-	return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
-}
 
 static void resetStack() {
 	vm.stackTop = vm.stack;
@@ -45,6 +42,18 @@ static void runtimeError(const char* format, ...) { //this allows us to pass in 
 	resetStack();
 }
 
+static Value clockNative(int argCount, Value* args) {
+	return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
+}
+
+static Value sqrtNative(int argCount, Value* args) {
+	if (argCount > 1) {
+		runtimeError("Expected 1 argument but got %d", argCount);
+	} else {
+		return NUMBER_VAL(sqrt(AS_NUMBER(*args)));
+	}
+}
+
 static void defineNative(const char* name, NativeFn function) {
 	push(OBJ_VAL(copyString(name, (int)strlen(name)))); //name in Lox
 	push(OBJ_VAL(newNative(function))); //pointer to C function
@@ -70,6 +79,7 @@ void initVM() {
 	vm.initString = copyString("init", 4); //this will be checked for every class, so we want it to always be present in string table
 
 	defineNative("clock", clockNative);
+	defineNative("sqrt", sqrtNative);
 }
 
 void freeVM() {
@@ -136,9 +146,13 @@ static bool callValue(Value callee, int argCount) {
 			case OBJ_NATIVE: {
 				NativeFn native = AS_NATIVE(callee);
 				Value result = native(argCount, vm.stackTop - argCount); //call function
-				vm.stackTop -= argCount + 1; //lower stacktop
-				push(result); //push result of function onto stack
-				return true;
+				if (vm.stackTop == vm.stack) { //if stack has just been reset (i.e. we have thrown a runtimeError which calls resetStack();) we know a native function has thrown an error, so we return false
+					return false;
+				} else {
+					vm.stackTop -= argCount + 1; //lower stacktop
+					push(result); //push result of function onto stack
+					return true;
+				}
 			}
 			default:
 				break;
@@ -247,7 +261,6 @@ static void concatenate() {
 }
 
 static InterpretResult run() { //every bytecode instruction has a stack effect that describes how instruction modifies stack; each expression leaves one value on stack, each statement has a total effect of 0
-	printf("beans");
 	CallFrame* frame = &vm.frames[vm.frameCount - 1]; //current topmost callframe
 
 #define READ_BYTE() (*frame->ip++) //reads byte then increments ip
@@ -400,6 +413,14 @@ static InterpretResult run() { //every bytecode instruction has a stack effect t
 		case OP_SUBTRACT:	BINARY_OP(NUMBER_VAL, -); break;
 		case OP_MULTIPLY:	BINARY_OP(NUMBER_VAL, *); break;
 		case OP_DIVIDE:		BINARY_OP(NUMBER_VAL, /); break;
+		case OP_POW: {
+			if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+				double b = AS_NUMBER(pop());
+				double a = AS_NUMBER(pop());
+				push(NUMBER_VAL(pow(a, b)));
+				break;
+			}
+		}
 		case OP_NOT: {
 			push(BOOL_VAL(isFalsey(pop())));
 			break;

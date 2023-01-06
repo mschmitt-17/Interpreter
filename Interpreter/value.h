@@ -2,7 +2,6 @@
 #define clox_value_h
 
 #include <string.h>
-
 #include "common.h"
 
 typedef struct Obj Obj;
