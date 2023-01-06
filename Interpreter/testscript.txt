@@ -1,6 +1,0 @@
-fun badSquareRoot(b) {
-	return sqrt(b);
-}
-
-var badSq = badSquareRoot(2);
-print badSq;
