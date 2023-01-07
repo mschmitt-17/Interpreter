@@ -234,6 +234,5 @@ void freeObjects() {
 		freeObject(object);
 		object = next;
 	}
-
 	free(vm.grayStack); //free just deallocates block of memory
 }

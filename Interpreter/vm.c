@@ -77,7 +77,6 @@ void initVM() {
 
 	vm.initString = NULL; // copying a string allocates memory, so we need to initialize it as NULL first to make sure GC doesn't read this before it's initialized
 	vm.initString = copyString("init", 4); //this will be checked for every class, so we want it to always be present in string table
-
 	defineNative("clock", clockNative);
 	defineNative("sqrt", sqrtNative);
 }

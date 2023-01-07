@@ -53,7 +53,7 @@ typedef struct {
 typedef Value (*NativeFn)(int argCount, Value* args);
 
 typedef struct {
-	Obj* obj; //obj header
+	Obj obj; //obj header
 	NativeFn function; //pointer to C function that implements behavior
 } ObjNative;
 

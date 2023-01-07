@@ -65,6 +65,7 @@ int main(int argc, const char* argv[]) {
 	initVM();
 	if (argc == 1) {
 		repl();
+		//runFile("TextFile1.txt");
 	} else if (argc == 2) {
 		runFile(argv[1]);
 	} else {

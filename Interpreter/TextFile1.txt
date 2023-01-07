@@ -1,0 +1,10 @@
+class Dog {
+	init(breed, age) {
+		this.breed = breed;
+		this.age = age;
+	}
+}
+
+var dog = Dog("labrador", 11);
+print dog.age;
+print dog.breed;
